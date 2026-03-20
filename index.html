@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>API Tester</title>
+<meta name="theme-color" content="#141820"/>
+<meta name="screen-orientation" content="portrait"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="APITester"/>
+<meta name="description" content="Offline REST API testing tool"/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="apple-touch-icon" href="./icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ════════ THEMES ════════ */
+:root {
+  --bg: #0b0e14;
+  --surface: #141820;
+  --surface2: #1c2130;
+  --border: #252d3d;
+  --border2: #2e3a52;
+  --accent: #00e5a0;
+  --accent-dim: rgba(0,229,160,0.08);
+  --accent-glow: rgba(0,229,160,0.2);
+  --text: #e8edf5;
+  --text-dim: #7a8ba8;
+  --text-muted: #4a5568;
+  --red: #ff4d6a;
+  --yellow: #f5c842;
+  --green: #00e5a0;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
+  --sans: 'Syne', system-ui, sans-serif;
+  --bottom-nav-h: 56px;
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #f7f8fa;
+  --border: #e2e6ed;
+  --border2: #cdd3de;
+  --accent: #00a372;
+  --accent-dim: rgba(0,163,114,0.08);
+  --accent-glow: rgba(0,163,114,0.2);
+  --text: #1a202c;
+  --text-dim: #4a5568;
+  --text-muted: #a0aec0;
+  --red: #e53e3e;
+  --yellow: #d69e2e;
+  --green: #00a372;
+}
+
+/* Midnight Blue theme */
+[data-theme="midnight"] {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --border: #30363d;
+  --border2: #3d444d;
+  --accent: #58a6ff;
+  --accent-dim: rgba(88,166,255,0.08);
+  --accent-glow: rgba(88,166,255,0.2);
+  --text: #e6edf3;
+  --text-dim: #7d8590;
+  --text-muted: #484f58;
+  --red: #f85149;
+  --yellow: #d29922;
+  --green: #3fb950;
+}
+
+/* Dracula theme */
+[data-theme="dracula"] {
+  --bg: #282a36;
+  --surface: #21222c;
+  --surface2: #2c2d3a;
+  --border: #383a4a;
+  --border2: #44475a;
+  --accent: #bd93f9;
+  --accent-dim: rgba(189,147,249,0.08);
+  --accent-glow: rgba(189,147,249,0.2);
+  --text: #f8f8f2;
+  --text-dim: #6272a4;
+  --text-muted: #44475a;
+  --red: #ff5555;
+  --yellow: #f1fa8c;
+  --green: #50fa7b;
+}
+
+/* Solarized theme */
+[data-theme="solarized"] {
+  --bg: #002b36;
+  --surface: #073642;
+  --surface2: #0a4050;
+  --border: #134152;
+  --border2: #1a5066;
+  --accent: #2aa198;
+  --accent-dim: rgba(42,161,152,0.1);
+  --accent-glow: rgba(42,161,152,0.25);
+  --text: #839496;
+  --text-dim: #657b83;
+  --text-muted: #586e75;
+  --red: #dc322f;
+  --yellow: #b58900;
+  --green: #859900;
+}
+
+html { height: 100%; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  transition: background 0.2s, color 0.2s;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+/* ════════ HEADER ════════ */
+header {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  height: 52px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 8px;
+}
+.logo {
+  font-size: 15px; font-weight: 800; letter-spacing: -0.5px;
+  color: var(--accent); white-space: nowrap;
+  display: flex; align-items: center; gap: 7px; flex-shrink: 0;
+}
+.logo-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); flex-shrink: 0; }
+
+.header-spacer { flex: 1; }
+
+.offline-pill {
+  display: none; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  color: var(--yellow); background: rgba(245,200,66,0.1);
+  border: 1px solid rgba(245,200,66,0.3); padding: 3px 8px;
+  border-radius: 20px; letter-spacing: 0.3px; flex-shrink: 0;
+}
+.offline-pill.show { display: flex; }
+.offline-dot { width: 5px; height: 5px; background: var(--yellow); border-radius: 50%; }
+
+.install-btn {
+  display: none; background: var(--accent-dim);
+  border: 1px solid rgba(0,229,160,0.3); color: var(--accent);
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  padding: 5px 10px; border-radius: 6px; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent; transition: all 0.2s;
+}
+.install-btn.show { display: block; }
+.install-btn:hover { background: var(--accent); color: #000; }
+
+.social-icon {
+  color: var(--text-muted); display: flex; align-items: center;
+  text-decoration: none; flex-shrink: 0; transition: color 0.2s;
+  -webkit-tap-highlight-color: transparent; padding: 4px;
+}
+.social-icon:hover { color: var(--accent); }
+.social-icon.yt:hover { color: #ff0000; }
+
+/* icon button (settings, etc.) */
+.icon-btn {
+  background: transparent; border: none; color: var(--text-dim);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0;
+  font-size: 16px; transition: color 0.2s, background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.icon-btn:hover { color: var(--accent); background: var(--accent-dim); }
+
+/* ════════ URL ROW ════════ */
+.url-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 12px; background: var(--surface);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.method-select {
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--accent); font-family: var(--mono);
+  font-size: 11px; font-weight: 700; padding: 8px 8px;
+  border-radius: 6px; cursor: pointer; outline: none; flex-shrink: 0;
+  transition: border-color 0.2s; -webkit-appearance: none; appearance: none;
+  min-width: 68px; text-align: center;
+}
+.method-select:focus { border-color: var(--accent); }
+.url-input {
+  flex: 1; min-width: 0; background: var(--surface2);
+  border: 1px solid var(--border2); color: var(--text);
+  font-family: var(--mono); font-size: 12px; padding: 8px 10px;
+  border-radius: 6px; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none;
+}
+.url-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+.url-input::placeholder { color: var(--text-muted); }
+.send-btn {
+  background: var(--accent); color: #000;
+  font-family: var(--sans); font-size: 12px; font-weight: 700;
+  padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; letter-spacing: 0.3px;
+}
+.send-btn:hover { background: #00ffb3; box-shadow: 0 0 14px var(--accent-glow); }
+.send-btn:active { transform: scale(0.96); }
+.send-btn:disabled { background: var(--text-muted); cursor: not-allowed; transform: none; }
+
+/* ════════ LOADING BAR ════════ */
+.loading-bar {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1s linear infinite;
+  display: none; flex-shrink: 0;
+}
+.loading-bar.active { display: block; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ════════ MAIN ════════ */
+.main { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+.request-panel, .response-panel { display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.request-panel { width: 50%; min-width: 240px; border-right: 1px solid var(--border); }
+.response-panel { flex: 1; }
+.splitter { width: 4px; background: var(--border); cursor: col-resize; flex-shrink: 0; transition: background 0.2s; }
+.splitter:hover, .splitter.dragging { background: var(--accent); }
+
+/* ════════ TABS ════════ */
+.tab-bar {
+  display: flex; align-items: center; background: var(--surface);
+  border-bottom: 1px solid var(--border); padding: 0 10px;
+  flex-shrink: 0; overflow-x: auto; scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab {
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  color: var(--text-dim); padding: 11px 11px; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap; flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* tab bar action button (clear response) */
+.tab-action {
+  margin-left: auto; flex-shrink: 0;
+  background: transparent; border: none; color: var(--text-muted);
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  padding: 5px 8px; border-radius: 4px; cursor: pointer;
+  transition: color 0.2s, background 0.2s; letter-spacing: 0.3px;
+  -webkit-tap-highlight-color: transparent; white-space: nowrap;
+}
+.tab-action:hover { color: var(--red); background: rgba(255,77,106,0.08); }
+
+/* ════════ PANEL CONTENT ════════ */
+.panel-content {
+  flex: 1; overflow-y: auto; padding: 14px;
+  display: none; flex-direction: column; gap: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+.panel-content.active { display: flex; }
+
+/* ════════ KV ROWS ════════ */
+.kv-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; align-items: center; }
+.kv-input {
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+  padding: 8px 10px; border-radius: 5px; outline: none; width: 100%; min-width: 0;
+  transition: border-color 0.2s; -webkit-appearance: none;
+}
+.kv-input:focus { border-color: var(--accent); }
+.kv-input::placeholder { color: var(--text-muted); }
+.kv-delete {
+  width: 34px; height: 34px; background: transparent; border: 1px solid var(--border);
+  color: var(--text-dim); border-radius: 5px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; line-height: 1; transition: border-color 0.2s, color 0.2s;
+  flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+}
+.kv-delete:hover, .kv-delete:active { border-color: var(--red); color: var(--red); }
+.add-row-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: transparent; border: 1px dashed var(--border2); color: var(--text-dim);
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  padding: 9px 12px; border-radius: 6px; cursor: pointer;
+  transition: border-color 0.2s, color 0.2s; width: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+.add-row-btn:hover, .add-row-btn:active { border-color: var(--accent); color: var(--accent); }
+
+/* ════════ BODY EDITOR ════════ */
+.body-type-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.body-type-btn {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  padding: 6px 12px; border-radius: 5px; border: 1px solid var(--border2);
+  background: transparent; color: var(--text-dim); cursor: pointer;
+  transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.body-type-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+.body-textarea {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text); font-family: var(--mono); font-size: 12px; line-height: 1.7;
+  padding: 12px; border-radius: 6px; outline: none; resize: vertical; min-height: 160px;
+  transition: border-color 0.2s; -webkit-appearance: none;
+}
+.body-textarea:focus { border-color: var(--accent); }
+.body-textarea::placeholder { color: var(--text-muted); }
+
+/* ════════ AUTH ════════ */
+.auth-type-select {
+  background: var(--surface2); border: 1px solid var(--border2); color: var(--text);
+  font-family: var(--mono); font-size: 12px; padding: 8px 10px; border-radius: 5px;
+  outline: none; width: 100%; cursor: pointer; transition: border-color 0.2s; -webkit-appearance: none;
+}
+.auth-type-select:focus { border-color: var(--accent); }
+.label { font-size: 10px; font-weight: 700; color: var(--text-dim); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 5px; }
+.field-group { display: flex; flex-direction: column; gap: 4px; }
+
+/* ════════ RESPONSE ════════ */
+.response-empty {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: var(--text-muted); gap: 12px; padding: 40px 20px; text-align: center;
+}
+.response-empty-icon { font-size: 36px; opacity: 0.4; }
+.response-empty p { font-size: 13px; line-height: 1.6; max-width: 220px; }
+
+.response-meta {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.status-badge {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  padding: 3px 9px; border-radius: 4px; letter-spacing: 0.5px; white-space: nowrap;
+}
+.status-2xx { background: rgba(0,229,160,0.12); color: var(--green); }
+.status-3xx { background: rgba(245,200,66,0.12); color: var(--yellow); }
+.status-4xx, .status-5xx, .status-err { background: rgba(255,77,106,0.12); color: var(--red); }
+.meta-item { font-family: var(--mono); font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.meta-item span { color: var(--text); }
+
+.res-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.copy-btn, .clear-res-btn {
+  background: transparent; border: 1px solid var(--border2); color: var(--text-dim);
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 5px; cursor: pointer;
+  transition: all 0.2s; -webkit-tap-highlight-color: transparent; white-space: nowrap;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.clear-res-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* word-wrap toggle */
+.wrap-toggle {
+  background: transparent; border: 1px solid var(--border2); color: var(--text-muted);
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  padding: 3px 8px; border-radius: 4px; cursor: pointer;
+  transition: all 0.2s; -webkit-tap-highlight-color: transparent; white-space: nowrap;
+}
+.wrap-toggle.on { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+.response-body-wrapper { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.response-code {
+  flex: 1; overflow-y: auto; padding: 14px;
+  font-family: var(--mono); line-height: 1.8;
+  white-space: pre-wrap; word-break: break-all; color: var(--text);
+  -webkit-overflow-scrolling: touch;
+  font-size: var(--res-font-size, 12px);
+}
+.response-code.no-wrap { white-space: pre; word-break: normal; overflow-x: auto; }
+
+.json-key { color: #7dd3fc; }
+.json-string { color: #a3e635; }
+.json-number { color: #fb923c; }
+.json-bool { color: #c084fc; }
+.json-null { color: var(--text-dim); }
+[data-theme="light"] .json-key { color: #0070c4; }
+[data-theme="light"] .json-string { color: #2e7d32; }
+[data-theme="light"] .json-number { color: #e65100; }
+[data-theme="light"] .json-bool { color: #6a0dad; }
+
+.response-headers-list {
+  padding: 12px; display: flex; flex-direction: column; gap: 5px;
+  overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch;
+}
+.header-row {
+  display: flex; gap: 10px; font-family: var(--mono); font-size: 11px;
+  padding: 7px 10px; background: var(--surface2); border-radius: 5px;
+  flex-wrap: wrap; align-items: baseline;
+}
+.header-key { color: #7dd3fc; font-weight: 600; flex-shrink: 0; min-width: 110px; word-break: break-all; }
+.header-val { color: var(--text); word-break: break-all; flex: 1; }
+
+/* ════════ BOTTOM NAV ════════ */
+.bottom-nav {
+  display: none; height: var(--bottom-nav-h); background: var(--surface);
+  border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.bottom-nav-inner { display: flex; height: 100%; }
+.bottom-nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; background: transparent; border: none; color: var(--text-dim);
+  font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  cursor: pointer; -webkit-tap-highlight-color: transparent; transition: color 0.2s;
+  text-transform: uppercase; position: relative;
+}
+.bottom-nav-btn.active { color: var(--accent); }
+.bottom-nav-btn.active::after {
+  content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+  height: 2px; background: var(--accent); border-radius: 0 0 2px 2px;
+}
+.nav-icon { font-size: 18px; line-height: 1; }
+
+/* ════════ METHOD COLORS ════════ */
+.method-GET    { color: #00e5a0 !important; }
+.method-POST   { color: #4da6ff !important; }
+.method-PUT    { color: #f5c842 !important; }
+.method-PATCH  { color: #ff8c42 !important; }
+.method-DELETE { color: #ff4d6a !important; }
+.method-HEAD   { color: #b57aff !important; }
+.method-OPTIONS{ color: #7a8ba8 !important; }
+
+/* ════════ TOAST ════════ */
+.toast {
+  position: fixed; bottom: 72px; left: 50%;
+  transform: translateX(-50%) translateY(30px);
+  background: var(--surface2); border: 1px solid var(--border2); color: var(--text);
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  padding: 10px 18px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 9999; opacity: 0; transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  display: flex; align-items: center; gap: 8px; white-space: nowrap; pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+/* ════════ MODAL BASE ════════ */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75); z-index: 100; backdrop-filter: blur(4px);
+  align-items: flex-end; justify-content: center;
+}
+.overlay.show { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px 16px 0 0; width: 100%; max-height: 85vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+  animation: slideUp 0.25s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-close {
+  background: transparent; border: none; color: var(--text-dim);
+  font-size: 20px; cursor: pointer; padding: 4px; line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+.modal-body {
+  overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ════════ HISTORY MODAL ════════ */
+.history-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px 0; flex-shrink: 0;
+}
+.hist-count { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+.clear-all-btn {
+  background: transparent; border: 1px solid rgba(255,77,106,0.3); color: var(--red);
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 5px; cursor: pointer;
+  transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.clear-all-btn:hover { background: rgba(255,77,106,0.08); border-color: var(--red); }
+
+.history-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 12px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; transition: border-color 0.15s;
+  -webkit-tap-highlight-color: transparent; min-height: 48px;
+}
+.history-item:active { border-color: var(--accent); }
+.history-url {
+  flex: 1; font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+.history-status { font-family: var(--mono); font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.hist-2xx { color: var(--green); }
+.hist-4xx, .hist-5xx, .hist-err { color: var(--red); }
+.method-tag {
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 3px; background: var(--surface); flex-shrink: 0;
+}
+.hist-del-btn {
+  width: 28px; height: 28px; background: transparent;
+  border: 1px solid transparent; color: var(--text-muted);
+  border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.hist-del-btn:hover, .hist-del-btn:active { border-color: var(--red); color: var(--red); background: rgba(255,77,106,0.08); }
+.empty-history { text-align: center; color: var(--text-muted); font-size: 13px; padding: 40px 20px; }
+
+/* ════════ SETTINGS MODAL ════════ */
+.settings-section { display: flex; flex-direction: column; gap: 6px; padding: 0 4px; }
+.settings-title {
+  font-size: 10px; font-weight: 700; color: var(--text-dim);
+  letter-spacing: 0.8px; text-transform: uppercase; padding: 8px 0 4px;
+}
+
+/* Theme grid */
+.theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.theme-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px; border: 2px solid var(--border);
+  cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  -webkit-tap-highlight-color: transparent; background: var(--surface2);
+}
+.theme-card:hover { border-color: var(--border2); }
+.theme-card.selected { border-color: var(--accent); background: var(--accent-dim); }
+.theme-swatch {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.1);
+}
+.theme-name { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); }
+
+/* Font size control */
+.font-control {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; background: var(--surface2); border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.font-control-label { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); flex: 1; }
+.font-control-val { font-family: var(--mono); font-size: 12px; color: var(--accent); min-width: 32px; text-align: center; }
+.font-btn {
+  width: 30px; height: 30px; background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text); border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.font-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Toggle row */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; background: var(--surface2); border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.toggle-label { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); }
+.toggle-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.toggle-switch {
+  position: relative; width: 40px; height: 22px; flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute; inset: 0; background: var(--border2);
+  border-radius: 22px; cursor: pointer; transition: background 0.2s;
+}
+.toggle-track::after {
+  content: ''; position: absolute; width: 16px; height: 16px;
+  background: white; border-radius: 50%; top: 3px; left: 3px;
+  transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle-switch input:checked + .toggle-track { background: var(--accent); }
+.toggle-switch input:checked + .toggle-track::after { transform: translateX(18px); }
+
+/* Danger zone */
+.danger-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 11px; border-radius: 8px;
+  border: 1px solid rgba(255,77,106,0.3); background: transparent; color: var(--red);
+  font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.danger-btn:hover, .danger-btn:active { background: rgba(255,77,106,0.08); border-color: var(--red); }
+
+/* ════════ BOOKMARKS MODAL ════════ */
+.bookmark-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; transition: border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.bookmark-item:active { border-color: var(--accent); }
+.bookmark-name { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bookmark-url { font-family: var(--mono); font-size: 10px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bookmark-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bm-del-btn {
+  width: 28px; height: 28px; background: transparent; border: 1px solid transparent;
+  color: var(--text-muted); border-radius: 5px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+  transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.bm-del-btn:hover { border-color: var(--red); color: var(--red); }
+
+.save-bookmark-row {
+  display: flex; gap: 8px; align-items: center; padding: 0 4px;
+}
+.save-bookmark-row input {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text); font-family: var(--sans); font-size: 12px; padding: 8px 10px;
+  border-radius: 6px; outline: none; -webkit-appearance: none;
+  transition: border-color 0.2s;
+}
+.save-bookmark-row input:focus { border-color: var(--accent); }
+.save-bookmark-row input::placeholder { color: var(--text-muted); }
+.save-bm-btn {
+  background: var(--accent); color: #000; font-family: var(--sans); font-size: 12px;
+  font-weight: 700; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer;
+  white-space: nowrap; transition: background 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.save-bm-btn:hover { background: #00ffb3; }
+
+/* ════════ RESPONSIVE ════════ */
+@media (max-width: 768px) {
+  header { height: 48px; padding: 0 10px; gap: 6px; }
+  .logo-text { display: none; }
+  .url-row { padding: 7px 10px; gap: 5px; }
+  .method-select { font-size: 10px; min-width: 60px; padding: 8px 6px; }
+  .send-btn { padding: 8px 12px; font-size: 11px; }
+  .main { position: relative; overflow: hidden; }
+  .splitter { display: none; }
+  .request-panel, .response-panel {
+    position: absolute; inset: 0; width: 100% !important; border-right: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .panel-hidden { opacity: 0; pointer-events: none; transform: translateX(16px); }
+  .bottom-nav { display: flex; }
+  .tab { padding: 12px 10px; }
+  .kv-input { padding: 10px; font-size: 13px; }
+  .kv-delete { width: 36px; height: 36px; font-size: 18px; }
+  .body-textarea { font-size: 13px; }
+  .response-code { font-size: 11px; }
+  .add-row-btn { padding: 11px; }
+  .theme-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 420px) {
+  header { padding: 0 8px; gap: 5px; }
+  .url-row { gap: 4px; padding: 6px 8px; }
+  .method-select { min-width: 56px; font-size: 9px; }
+  .send-btn { padding: 8px 10px; }
+  .panel-content { padding: 10px; }
+  .tab { padding: 11px 8px; font-size: 11px; }
+  .kv-row { grid-template-columns: 1fr 1fr 34px; gap: 4px; }
+}
+@media (min-width: 1200px) {
+  header { padding: 0 24px; }
+  .url-row { padding: 8px 20px; }
+  .panel-content { padding: 18px; }
+  .kv-input { font-size: 13px; }
+  .body-textarea { font-size: 13px; min-height: 220px; }
+  .response-code { font-size: 13px; }
+  .tab { font-size: 13px; padding: 12px 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">APITESTER</span>
+  </div>
+
+  <div class="offline-pill" id="offlinePill"><div class="offline-dot"></div>Offline</div>
+  <div class="header-spacer"></div>
+
+  <a href="https://github.com/DevKevo25" target="_blank" rel="noopener" class="social-icon" title="GitHub">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/></svg>
+  </a>
+  <a href="https://youtube.com/@kevoloves?si=oCFmYYOIxaCaucAF" target="_blank" rel="noopener" class="social-icon yt" title="YouTube">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+  </a>
+
+  <!-- Bookmarks -->
+  <button class="icon-btn" onclick="showBookmarks()" title="Bookmarks">🔖</button>
+  <!-- Settings -->
+  <button class="icon-btn" onclick="showSettings()" title="Settings">⚙️</button>
+
+  <button class="install-btn" id="installBtn" onclick="installApp()">⬇ Install</button>
+</header>
+
+<!-- URL Row -->
+<div class="url-row">
+  <select class="method-select" id="methodSelect">
+    <option>GET</option><option>POST</option><option>PUT</option>
+    <option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
+  </select>
+  <input class="url-input" id="urlInput" type="url" inputmode="url"
+    placeholder="https://api.example.com/v1/resource" autocomplete="off" spellcheck="false"/>
+  <button class="send-btn" id="sendBtn" onclick="sendRequest()">SEND</button>
+</div>
+
+<div class="loading-bar" id="loadingBar"></div>
+
+<!-- Main -->
+<div class="main" id="mainArea">
+
+  <!-- Request Panel -->
+  <div class="request-panel" id="requestPanel">
+    <div class="tab-bar">
+      <div class="tab active" onclick="reqTab(this,'params')">Params</div>
+      <div class="tab" onclick="reqTab(this,'headers')">Headers</div>
+      <div class="tab" onclick="reqTab(this,'auth')">Auth</div>
+      <div class="tab" onclick="reqTab(this,'body')">Body</div>
+    </div>
+    <div class="panel-content active" id="req-params">
+      <div id="paramRows"></div>
+      <button class="add-row-btn" onclick="addRow('param')">+ Add Parameter</button>
+    </div>
+    <div class="panel-content" id="req-headers">
+      <div id="headerRows"></div>
+      <button class="add-row-btn" onclick="addRow('header')">+ Add Header</button>
+    </div>
+    <div class="panel-content" id="req-auth">
+      <div class="field-group">
+        <div class="label">Auth Type</div>
+        <select class="auth-type-select" id="authType" onchange="renderAuthFields()">
+          <option value="none">None</option>
+          <option value="bearer">Bearer Token</option>
+          <option value="basic">Basic Auth</option>
+          <option value="apikey">API Key</option>
+        </select>
+      </div>
+      <div id="authFields"></div>
+    </div>
+    <div class="panel-content" id="req-body">
+      <div class="body-type-row">
+        <button class="body-type-btn active" id="bt-json" onclick="setBodyType('json')">JSON</button>
+        <button class="body-type-btn" id="bt-text" onclick="setBodyType('text')">Text</button>
+        <button class="body-type-btn" id="bt-form" onclick="setBodyType('form')">Form</button>
+        <button class="body-type-btn" id="bt-none" onclick="setBodyType('none')">None</button>
+      </div>
+      <div id="bodyContent" style="display:flex;flex-direction:column;gap:8px;">
+        <textarea class="body-textarea" id="bodyTextarea" placeholder='{"key": "value"}'></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Splitter -->
+  <div class="splitter" id="splitter"></div>
+
+  <!-- Response Panel -->
+  <div class="response-panel panel-hidden" id="responsePanel">
+    <div class="tab-bar">
+      <div class="tab active" onclick="resTab(this,'body')">Body</div>
+      <div class="tab" onclick="resTab(this,'resHeaders')">Headers</div>
+      <button class="tab-action" onclick="clearResponse()" title="Clear response">✕ Clear</button>
+    </div>
+    <div class="panel-content active" id="res-body" style="padding:0;overflow:hidden;">
+      <div id="responseEmpty" class="response-empty">
+        <div class="response-empty-icon">⚡</div>
+        <p>Enter a URL and hit SEND to make your first request.</p>
+      </div>
+      <div id="responseResult" style="display:none;flex-direction:column;height:100%;">
+        <div class="response-meta" id="responseMeta"></div>
+        <div class="response-body-wrapper">
+          <pre class="response-code" id="responseCode"></pre>
+        </div>
+      </div>
+    </div>
+    <div class="panel-content" id="res-resHeaders" style="padding:0;overflow:hidden;">
+      <div id="responseHeadersList" class="response-headers-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bottom-nav-btn active" id="navReq" onclick="mobilePanel('request')">
+      <span class="nav-icon">✏️</span>Request
+    </button>
+    <button class="bottom-nav-btn" id="navRes" onclick="mobilePanel('response')">
+      <span class="nav-icon">📡</span>Response
+    </button>
+  </div>
+</div>
+
+<!-- ════════ HISTORY MODAL ════════ -->
+<div class="overlay" id="historyOverlay" onclick="overlayClick('historyOverlay',event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Request History</span>
+      <button class="modal-close" onclick="hideModal('historyOverlay')">✕</button>
+    </div>
+    <div class="history-toolbar">
+      <span class="hist-count" id="histCount"></span>
+      <button class="clear-all-btn" onclick="clearAllHistory()">Clear All</button>
+    </div>
+    <div class="modal-body" id="historyBody"></div>
+  </div>
+</div>
+
+<!-- ════════ SETTINGS MODAL ════════ -->
+<div class="overlay" id="settingsOverlay" onclick="overlayClick('settingsOverlay',event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Settings</span>
+      <button class="modal-close" onclick="hideModal('settingsOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Theme -->
+      <div class="settings-section">
+        <div class="settings-title">Theme</div>
+        <div class="theme-grid">
+          <div class="theme-card" data-theme="dark" onclick="setTheme('dark')">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#0b0e14,#00e5a0)"></div>
+            <span class="theme-name">Dark</span>
+          </div>
+          <div class="theme-card" data-theme="light" onclick="setTheme('light')">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#f0f2f5,#00a372)"></div>
+            <span class="theme-name">Light</span>
+          </div>
+          <div class="theme-card" data-theme="midnight" onclick="setTheme('midnight')">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#0d1117,#58a6ff)"></div>
+            <span class="theme-name">Midnight</span>
+          </div>
+          <div class="theme-card" data-theme="dracula" onclick="setTheme('dracula')">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#282a36,#bd93f9)"></div>
+            <span class="theme-name">Dracula</span>
+          </div>
+          <div class="theme-card" data-theme="solarized" onclick="setTheme('solarized')">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#002b36,#2aa198)"></div>
+            <span class="theme-name">Solarized</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Response Font Size -->
+      <div class="settings-section">
+        <div class="settings-title">Response Font Size</div>
+        <div class="font-control">
+          <span class="font-control-label">Size</span>
+          <button class="font-btn" onclick="changeFontSize(-1)">−</button>
+          <span class="font-control-val" id="fontSizeVal">12px</span>
+          <button class="font-btn" onclick="changeFontSize(1)">+</button>
+        </div>
+      </div>
+
+      <!-- Toggles -->
+      <div class="settings-section">
+        <div class="settings-title">Preferences</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Word Wrap</div>
+            <div class="toggle-desc">Wrap long response lines</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="wrapToggle" checked onchange="toggleWrap(this.checked)"/>
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Auto-switch to Response</div>
+            <div class="toggle-desc">Jump to response panel after send</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="autoSwitchToggle" checked onchange="savePref('autoSwitch',this.checked)"/>
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Save History</div>
+            <div class="toggle-desc">Remember past requests</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="saveHistToggle" checked onchange="savePref('saveHist',this.checked)"/>
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="settings-section">
+        <div class="settings-title">Danger Zone</div>
+        <button class="danger-btn" onclick="clearAllHistory();toast('History cleared')">🗑 Clear All History</button>
+        <button class="danger-btn" onclick="resetAllSettings()">↺ Reset All Settings</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════ BOOKMARKS MODAL ════════ -->
+<div class="overlay" id="bookmarksOverlay" onclick="overlayClick('bookmarksOverlay',event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Bookmarks</span>
+      <button class="modal-close" onclick="hideModal('bookmarksOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="save-bookmark-row">
+        <input type="text" id="bmNameInput" placeholder="Bookmark name (optional)"/>
+        <button class="save-bm-btn" onclick="saveBookmark()">Save Current</button>
+      </div>
+      <div id="bookmarksList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><div class="toast-dot"></div><span id="toastMsg"></span></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// STATE — all declarations first
+// ══════════════════════════════════════════════════════════════
+let paramRows    = [];
+let headerRows   = [];
+let bodyType     = 'json';
+let lastResponse = null;
+let currentPanel = 'request';
+let history      = [];
+let bookmarks    = [];
+let prefs        = { theme: 'dark', fontSize: 12, wrap: true, autoSwitch: true, saveHist: true };
+let wordWrap     = true;
+
+// Load persisted data
+try { history   = JSON.parse(localStorage.getItem('apitester_hist')  || '[]'); } catch(e) {}
+try { bookmarks = JSON.parse(localStorage.getItem('apitester_bmarks') || '[]'); } catch(e) {}
+try {
+  const saved = JSON.parse(localStorage.getItem('apitester_prefs') || '{}');
+  prefs = { ...prefs, ...saved };
+} catch(e) {}
+
+// ── PWA: Service Worker ──────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed' && navigator.serviceWorker.controller)
+              toast('App updated — reload to get latest');
+          });
+        });
+      }).catch(() => {});
+  });
+}
+
+// ── PWA: Install Prompt ──────────────────────────────────────
+let _deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); _deferredInstall = e;
+  document.getElementById('installBtn').classList.add('show');
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBtn').classList.remove('show');
+  _deferredInstall = null; toast('App installed!');
+});
+async function installApp() {
+  if (!_deferredInstall) return;
+  _deferredInstall.prompt();
+  const { outcome } = await _deferredInstall.userChoice;
+  if (outcome === 'accepted') _deferredInstall = null;
+}
+
+// ── Orientation Lock ─────────────────────────────────────────
+if (screen.orientation?.lock) screen.orientation.lock('portrait').catch(() => {});
+
+// ── Offline Detection ────────────────────────────────────────
+function updateOnlineStatus() {
+  const pill = document.getElementById('offlinePill');
+  navigator.onLine ? pill.classList.remove('show') : pill.classList.add('show');
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', () => { updateOnlineStatus(); toast('Offline — app still works!'); });
+updateOnlineStatus();
+
+// ══════════════════════════════════════════════════════════════
+// SETTINGS & THEME
+// ══════════════════════════════════════════════════════════════
+function applyPrefs() {
+  // Theme
+  const t = prefs.theme === 'dark' ? null : prefs.theme;
+  document.documentElement.setAttribute('data-theme', prefs.theme === 'dark' ? '' : prefs.theme);
+  if (prefs.theme === 'dark') document.documentElement.removeAttribute('data-theme');
+  // Font size
+  document.getElementById('responseCode').style.fontSize = prefs.fontSize + 'px';
+  document.getElementById('fontSizeVal').textContent = prefs.fontSize + 'px';
+  // Wrap
+  wordWrap = prefs.wrap;
+  document.getElementById('responseCode').classList.toggle('no-wrap', !wordWrap);
+  document.getElementById('wrapToggle').checked = prefs.wrap;
+  // Toggles
+  document.getElementById('autoSwitchToggle').checked = prefs.autoSwitch;
+  document.getElementById('saveHistToggle').checked = prefs.saveHist;
+  // Theme cards
+  document.querySelectorAll('.theme-card').forEach(c =>
+    c.classList.toggle('selected', c.dataset.theme === prefs.theme));
+}
+
+function savePrefs() {
+  try { localStorage.setItem('apitester_prefs', JSON.stringify(prefs)); } catch(e) {}
+}
+
+function setTheme(t) {
+  prefs.theme = t; savePrefs(); applyPrefs(); toast('Theme: ' + t);
+}
+
+function changeFontSize(delta) {
+  prefs.fontSize = Math.max(9, Math.min(20, prefs.fontSize + delta));
+  savePrefs(); applyPrefs();
+}
+
+function toggleWrap(val) {
+  prefs.wrap = val; wordWrap = val; savePrefs();
+  document.getElementById('responseCode').classList.toggle('no-wrap', !val);
+}
+
+function savePref(key, val) {
+  prefs[key] = val; savePrefs();
+}
+
+function resetAllSettings() {
+  prefs = { theme: 'dark', fontSize: 12, wrap: true, autoSwitch: true, saveHist: true };
+  savePrefs(); applyPrefs(); toast('Settings reset');
+}
+
+function showSettings() {
+  applyPrefs();
+  document.getElementById('settingsOverlay').classList.add('show');
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════════════════════════
+function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+function overlayClick(id, e) { if (e.target === document.getElementById(id)) hideModal(id); }
+
+// ══════════════════════════════════════════════════════════════
+// LAYOUT
+// ══════════════════════════════════════════════════════════════
+function isMobile() { return window.innerWidth <= 768; }
+
+function applyLayout() {
+  if (isMobile()) {
+    mobilePanel(currentPanel, true);
+  } else {
+    document.getElementById('requestPanel').classList.remove('panel-hidden');
+    document.getElementById('responsePanel').classList.remove('panel-hidden');
+    const rp = document.getElementById('requestPanel');
+    if (!rp.style.width) rp.style.width = '50%';
+  }
+}
+
+function mobilePanel(which, silent) {
+  currentPanel = which;
+  const req = document.getElementById('requestPanel');
+  const res = document.getElementById('responsePanel');
+  if (which === 'request') {
+    req.classList.remove('panel-hidden'); res.classList.add('panel-hidden');
+    document.getElementById('navReq').classList.add('active');
+    document.getElementById('navRes').classList.remove('active');
+  } else {
+    res.classList.remove('panel-hidden'); req.classList.add('panel-hidden');
+    document.getElementById('navRes').classList.add('active');
+    document.getElementById('navReq').classList.remove('active');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════════════════
+function reqTab(el, id) {
+  el.closest('.tab-bar').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('[id^="req-"]').forEach(p => p.classList.remove('active'));
+  document.getElementById('req-' + id)?.classList.add('active');
+}
+function resTab(el, id) {
+  el.closest('.tab-bar').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('[id^="res-"]').forEach(p => p.classList.remove('active'));
+  document.getElementById('res-' + id)?.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════
+// KV ROWS
+// ══════════════════════════════════════════════════════════════
+function addRow(type) {
+  const id = 'r' + Date.now() + Math.floor(Math.random() * 1e4);
+  (type === 'param' ? paramRows : headerRows).push({ id, key: '', value: '' });
+  renderRows(type);
+}
+function renderRows(type) {
+  const arr = type === 'param' ? paramRows : headerRows;
+  document.getElementById(type === 'param' ? 'paramRows' : 'headerRows').innerHTML =
+    arr.map(r => `
+      <div class="kv-row" style="margin-bottom:7px;">
+        <input class="kv-input" placeholder="${type === 'param' ? 'key' : 'Header-Name'}"
+          value="${esc(r.key)}" oninput="upRow('${type}','${r.id}','key',this.value)"/>
+        <input class="kv-input" placeholder="value"
+          value="${esc(r.value)}" oninput="upRow('${type}','${r.id}','value',this.value)"/>
+        <button class="kv-delete" onclick="delRow('${type}','${r.id}')">×</button>
+      </div>`).join('');
+}
+function upRow(type, id, f, v) {
+  const r = (type === 'param' ? paramRows : headerRows).find(r => r.id === id);
+  if (r) r[f] = v;
+}
+function delRow(type, id) {
+  if (type === 'param') paramRows = paramRows.filter(r => r.id !== id);
+  else headerRows = headerRows.filter(r => r.id !== id);
+  renderRows(type);
+}
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ══════════════════════════════════════════════════════════════
+// BODY TYPE
+// ══════════════════════════════════════════════════════════════
+function setBodyType(type) {
+  bodyType = type;
+  ['json','text','form','none'].forEach(t =>
+    document.getElementById('bt-' + t).classList.toggle('active', t === type));
+  const bc = document.getElementById('bodyContent');
+  if (type === 'none') {
+    bc.innerHTML = `<p style="color:var(--text-muted);font-size:12px;font-family:var(--mono);padding:4px 0;">No body will be sent.</p>`;
+  } else if (type === 'form') {
+    bc.innerHTML = `<div id="formRows"></div><button class="add-row-btn" onclick="addFRow()">+ Add Field</button>`;
+    window._fRows = []; addFRow(); addFRow();
+  } else {
+    bc.innerHTML = `<textarea class="body-textarea" id="bodyTextarea"
+      placeholder="${type === 'json' ? '{\n  "key": "value"\n}' : 'Plain text body...'}"></textarea>`;
+  }
+}
+function addFRow() {
+  if (!window._fRows) window._fRows = [];
+  const id = 'f' + Date.now() + Math.floor(Math.random() * 1e4);
+  window._fRows.push({ id, key: '', value: '' });
+  renderFRows();
+}
+function renderFRows() {
+  const c = document.getElementById('formRows'); if (!c) return;
+  c.innerHTML = (window._fRows||[]).map(r => `
+    <div class="kv-row" style="margin-bottom:7px;">
+      <input class="kv-input" placeholder="field" value="${esc(r.key)}" oninput="upFRow('${r.id}','key',this.value)"/>
+      <input class="kv-input" placeholder="value" value="${esc(r.value)}" oninput="upFRow('${r.id}','value',this.value)"/>
+      <button class="kv-delete" onclick="delFRow('${r.id}')">×</button>
+    </div>`).join('');
+}
+function upFRow(id, f, v) { const r = (window._fRows||[]).find(r => r.id === id); if (r) r[f] = v; }
+function delFRow(id) { window._fRows = (window._fRows||[]).filter(r => r.id !== id); renderFRows(); }
+
+// ══════════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════════
+function renderAuthFields() {
+  const t = document.getElementById('authType').value;
+  const f = document.getElementById('authFields');
+  const inp = (id, ph, type = 'text') =>
+    `<input class="kv-input" id="${id}" style="width:100%;margin-top:5px;" placeholder="${ph}" type="${type}"/>`;
+  if (t === 'none') { f.innerHTML = ''; }
+  else if (t === 'bearer') { f.innerHTML = `<div class="field-group"><div class="label">Token</div>${inp('authToken','your-bearer-token')}</div>`; }
+  else if (t === 'basic')  { f.innerHTML = `<div class="field-group"><div class="label">Username</div>${inp('authUser','username')}</div><div class="field-group" style="margin-top:8px;"><div class="label">Password</div>${inp('authPass','password','password')}</div>`; }
+  else if (t === 'apikey') { f.innerHTML = `<div class="field-group"><div class="label">Header Name</div>${inp('authKeyName','X-API-Key')}</div><div class="field-group" style="margin-top:8px;"><div class="label">Value</div>${inp('authKeyVal','your-api-key')}</div>`; }
+}
+
+// ══════════════════════════════════════════════════════════════
+// BUILD & SEND REQUEST
+// ══════════════════════════════════════════════════════════════
+function buildRequest() {
+  let url = document.getElementById('urlInput').value.trim();
+  const method = document.getElementById('methodSelect').value;
+  const params = paramRows.filter(r => r.key.trim());
+  if (params.length) url += (url.includes('?') ? '&' : '?') + new URLSearchParams(params.map(r => [r.key, r.value])).toString();
+  const headers = {};
+  headerRows.filter(r => r.key.trim()).forEach(r => { headers[r.key] = r.value; });
+  const at = document.getElementById('authType').value;
+  if (at === 'bearer') { const t = document.getElementById('authToken')?.value||''; if(t) headers['Authorization'] = `Bearer ${t}`; }
+  else if (at === 'basic') { const u = document.getElementById('authUser')?.value||'', p = document.getElementById('authPass')?.value||''; headers['Authorization'] = `Basic ${btoa(u+':'+p)}`; }
+  else if (at === 'apikey') { const n = document.getElementById('authKeyName')?.value||'X-API-Key', v = document.getElementById('authKeyVal')?.value||''; if(v) headers[n] = v; }
+  let body = undefined;
+  if (!['GET','HEAD'].includes(method)) {
+    if (bodyType === 'json')  { const r = document.getElementById('bodyTextarea')?.value||''; if(r.trim()) { headers['Content-Type']='application/json'; body=r; } }
+    else if (bodyType === 'text')  { const r = document.getElementById('bodyTextarea')?.value||''; if(r.trim()) { headers['Content-Type']='text/plain'; body=r; } }
+    else if (bodyType === 'form')  { const fd = new URLSearchParams(); (window._fRows||[]).filter(r=>r.key.trim()).forEach(r=>fd.append(r.key,r.value)); headers['Content-Type']='application/x-www-form-urlencoded'; body=fd.toString(); }
+  }
+  return { url, method, headers, body };
+}
+
+async function sendRequest() {
+  const rawUrl = document.getElementById('urlInput').value.trim();
+  if (!rawUrl) { toast('Enter a URL first'); return; }
+  const btn = document.getElementById('sendBtn');
+  const bar = document.getElementById('loadingBar');
+  btn.disabled = true; btn.textContent = '...'; bar.classList.add('active');
+  let req;
+  try { req = buildRequest(); } catch(e) { toast('Error: ' + e.message); resetBtn(); return; }
+  const t0 = Date.now();
+  let status = 0, statusText = '', resH = {}, resBody = '', ok = false;
+  try {
+    const opts = { method: req.method, headers: req.headers };
+    if (req.body !== undefined) opts.body = req.body;
+    const res = await fetch(req.url, opts);
+    status = res.status; statusText = res.statusText; ok = res.ok;
+    res.headers.forEach((v, k) => { resH[k] = v; });
+    resBody = await res.text();
+  } catch(e) { statusText = 'Network Error'; resBody = e.message; }
+  const elapsed = Date.now() - t0;
+  if (prefs.saveHist) {
+    history.unshift({ method: req.method, url: rawUrl, status: status||'ERR', elapsed, time: new Date().toLocaleTimeString() });
+    if (history.length > 50) history.pop();
+    try { localStorage.setItem('apitester_hist', JSON.stringify(history)); } catch(e) {}
+  }
+  showResponse({ status, statusText, headers: resH, body: resBody, elapsed, ok });
+  resetBtn();
+  if (isMobile() && prefs.autoSwitch) mobilePanel('response');
+  document.querySelectorAll('[id^="res-"]').forEach(p => p.classList.remove('active'));
+  document.getElementById('res-body').classList.add('active');
+  document.querySelectorAll('#responsePanel .tab-bar .tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+}
+
+function resetBtn() {
+  const btn = document.getElementById('sendBtn'), bar = document.getElementById('loadingBar');
+  btn.disabled = false; btn.textContent = 'SEND'; bar.classList.remove('active');
+}
+
+// ══════════════════════════════════════════════════════════════
+// RESPONSE
+// ══════════════════════════════════════════════════════════════
+function showResponse({ status, statusText, headers, body, elapsed }) {
+  lastResponse = { status, statusText, headers, body, elapsed };
+  document.getElementById('responseEmpty').style.display = 'none';
+  const res = document.getElementById('responseResult'); res.style.display = 'flex';
+  const cat = status ? Math.floor(status / 100) : 0;
+  const cls = cat===2?'status-2xx':cat===3?'status-3xx':cat===4?'status-4xx':cat===5?'status-5xx':'status-err';
+  const sz = new Blob([body]).size, szStr = sz < 1024 ? sz+' B' : (sz/1024).toFixed(1)+' KB';
+  document.getElementById('responseMeta').innerHTML =
+    `<span class="status-badge ${cls}">${status||'ERR'} ${statusText}</span>
+     <span class="meta-item">⏱ <span>${elapsed}ms</span></span>
+     <span class="meta-item">📦 <span>${szStr}</span></span>
+     <div class="res-actions">
+       <button class="copy-btn" onclick="copyRes()">Copy</button>
+       <button class="clear-res-btn" onclick="clearResponse()">Clear</button>
+     </div>`;
+  const code = document.getElementById('responseCode'), ct = headers['content-type']||'';
+  code.style.fontSize = prefs.fontSize + 'px';
+  code.classList.toggle('no-wrap', !wordWrap);
+  if (ct.includes('json') || body.trim()[0]==='{' || body.trim()[0]==='[') {
+    try { code.innerHTML = highlight(JSON.stringify(JSON.parse(body), null, 2)); }
+    catch { code.textContent = body; }
+  } else { code.textContent = body; }
+  document.getElementById('responseHeadersList').innerHTML =
+    Object.entries(headers).map(([k,v]) =>
+      `<div class="header-row"><span class="header-key">${k}</span><span class="header-val">${v}</span></div>`
+    ).join('') || '<p style="padding:20px;color:var(--text-muted);font-size:12px;">No headers returned</p>';
+}
+
+function clearResponse() {
+  lastResponse = null;
+  document.getElementById('responseEmpty').style.display = '';
+  document.getElementById('responseResult').style.display = 'none';
+  document.getElementById('responseCode').innerHTML = '';
+  document.getElementById('responseHeadersList').innerHTML = '';
+  toast('Response cleared');
+}
+
+function highlight(json) {
+  return json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+      let c = 'json-number';
+      if (/^"/.test(m)) c = /:$/.test(m) ? 'json-key' : 'json-string';
+      else if (/true|false/.test(m)) c = 'json-bool';
+      else if (/null/.test(m)) c = 'json-null';
+      return `<span class="${c}">${m}</span>`;
+    });
+}
+
+function copyRes() {
+  if (!lastResponse) return;
+  const txt = lastResponse.body;
+  if (navigator.clipboard) { navigator.clipboard.writeText(txt).then(() => toast('Copied!')); }
+  else { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); toast('Copied!'); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════════════════════════
+function showHistory() {
+  renderHistory();
+  document.getElementById('historyOverlay').classList.add('show');
+}
+
+function renderHistory() {
+  const body = document.getElementById('historyBody');
+  document.getElementById('histCount').textContent = history.length ? `${history.length} request${history.length > 1 ? 's' : ''}` : '';
+  if (!history.length) {
+    body.innerHTML = '<div class="empty-history">No requests yet. Send your first one!</div>';
+    return;
+  }
+  body.innerHTML = history.map((h, i) => {
+    const cat = typeof h.status === 'number' ? Math.floor(h.status / 100) : 0;
+    const cls = cat===2?'hist-2xx':cat===4||cat===5?'hist-4xx':'hist-err';
+    return `<div class="history-item">
+      <span class="method-tag method-${h.method}" onclick="loadHist(${i})">${h.method}</span>
+      <div style="flex:1;min-width:0;cursor:pointer;" onclick="loadHist(${i})">
+        <div class="history-url">${h.url}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:2px;">${h.time} · ${h.elapsed}ms</div>
+      </div>
+      <span class="history-status ${cls}">${h.status}</span>
+      <button class="hist-del-btn" onclick="deleteHistItem(${i})" title="Delete">×</button>
+    </div>`;
+  }).join('');
+}
+
+function deleteHistItem(i) {
+  history.splice(i, 1);
+  try { localStorage.setItem('apitester_hist', JSON.stringify(history)); } catch(e) {}
+  renderHistory();
+  toast('Removed');
+}
+
+function clearAllHistory() {
+  history = [];
+  try { localStorage.setItem('apitester_hist', '[]'); } catch(e) {}
+  renderHistory();
+  toast('History cleared');
+}
+
+function loadHist(i) {
+  const h = history[i];
+  document.getElementById('urlInput').value = h.url;
+  document.getElementById('methodSelect').value = h.method;
+  updateMethodColor();
+  hideModal('historyOverlay');
+  toast('Request loaded');
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOKMARKS
+// ══════════════════════════════════════════════════════════════
+function showBookmarks() {
+  renderBookmarks();
+  document.getElementById('bookmarksOverlay').classList.add('show');
+}
+
+function renderBookmarks() {
+  const c = document.getElementById('bookmarksList');
+  if (!bookmarks.length) {
+    c.innerHTML = '<div class="empty-history">No bookmarks yet. Save a request!</div>';
+    return;
+  }
+  c.innerHTML = bookmarks.map((b, i) => `
+    <div class="bookmark-item">
+      <span class="method-tag method-${b.method}" style="cursor:pointer;" onclick="loadBookmark(${i})">${b.method}</span>
+      <div class="bookmark-info" onclick="loadBookmark(${i})" style="cursor:pointer;">
+        <div class="bookmark-name">${esc(b.name || b.url)}</div>
+        <div class="bookmark-url">${esc(b.url)}</div>
+      </div>
+      <button class="bm-del-btn" onclick="deleteBookmark(${i})" title="Delete">×</button>
+    </div>`).join('');
+}
+
+function saveBookmark() {
+  const url = document.getElementById('urlInput').value.trim();
+  const method = document.getElementById('methodSelect').value;
+  if (!url) { toast('Enter a URL first'); return; }
+  const name = document.getElementById('bmNameInput').value.trim() || url;
+  bookmarks.unshift({ name, url, method });
+  try { localStorage.setItem('apitester_bmarks', JSON.stringify(bookmarks)); } catch(e) {}
+  document.getElementById('bmNameInput').value = '';
+  renderBookmarks();
+  toast('Bookmark saved');
+}
+
+function loadBookmark(i) {
+  const b = bookmarks[i];
+  document.getElementById('urlInput').value = b.url;
+  document.getElementById('methodSelect').value = b.method;
+  updateMethodColor();
+  hideModal('bookmarksOverlay');
+  toast('Loaded');
+}
+
+function deleteBookmark(i) {
+  bookmarks.splice(i, 1);
+  try { localStorage.setItem('apitester_bmarks', JSON.stringify(bookmarks)); } catch(e) {}
+  renderBookmarks();
+  toast('Bookmark deleted');
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════
+function toast(msg) {
+  const el = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════════════════════════════════
+// SPLITTER
+// ══════════════════════════════════════════════════════════════
+const spl = document.getElementById('splitter');
+const rp  = document.getElementById('requestPanel');
+let drag = false, sx, sw;
+spl.addEventListener('mousedown', e => {
+  if (isMobile()) return;
+  drag = true; sx = e.clientX; sw = rp.offsetWidth;
+  spl.classList.add('dragging');
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+});
+document.addEventListener('mousemove', e => {
+  if (!drag) return;
+  rp.style.width = Math.max(240, Math.min(sw + e.clientX - sx, window.innerWidth - 240)) + 'px';
+});
+document.addEventListener('mouseup', () => {
+  if (!drag) return;
+  drag = false; spl.classList.remove('dragging');
+  document.body.style.cursor = ''; document.body.style.userSelect = '';
+});
+
+// ══════════════════════════════════════════════════════════════
+// MISC
+// ══════════════════════════════════════════════════════════════
+function updateMethodColor() {
+  const s = document.getElementById('methodSelect');
+  s.className = 'method-select method-' + s.value;
+}
+document.getElementById('methodSelect').addEventListener('change', updateMethodColor);
+document.getElementById('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendRequest(); });
+
+// ══════════════════════════════════════════════════════════════
+// INIT — runs last
+// ══════════════════════════════════════════════════════════════
+addRow('param'); addRow('param');
+addRow('header'); addRow('header');
+updateMethodColor();
+applyPrefs();
+applyLayout();
+window.addEventListener('resize', applyLayout);
+</script>
+</body>
+</html>
