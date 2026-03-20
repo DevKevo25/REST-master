@@ -1,0 +1,33 @@
+{
+  "name": "API Tester",
+  "short_name": "APITester",
+  "description": "A fast offline REST API testing tool",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0e14",
+  "theme_color": "#141820",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["developer", "utilities"],
+  "shortcuts": [
+    {
+      "name": "New Request",
+      "short_name": "Request",
+      "description": "Open API Tester",
+      "url": "./index.html"
+    }
+  ]
+}
