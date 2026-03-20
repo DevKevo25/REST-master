@@ -4,7 +4,7 @@
   "description": "A fast offline REST API testing tool",
   "start_url": "./index.html",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "portrait",
   "background_color": "#0b0e14",
   "theme_color": "#141820",
   "icons": [
