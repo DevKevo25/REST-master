@@ -1,6 +1,6 @@
 // ─── API Tester Service Worker ───────────────────────────────────────────────
-const CACHE_NAME = 'apitester-v1';
-const FONT_CACHE = 'apitester-fonts-v1';
+const CACHE_NAME = 'apitester-v2';
+const FONT_CACHE = 'apitester-fonts-v2';
 
 // App shell files — everything needed to run offline
 const APP_SHELL = [
